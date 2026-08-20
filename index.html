@@ -7,91 +7,92 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Library tambahan untuk membaca Barcode dari Kamera HP -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
 
     <div class="flex h-screen overflow-hidden">
         <aside class="w-64 bg-slate-900 text-white hidden md:flex flex-col z-20">
-            <div class="p-6 text-2xl font-bold border-b border-slate-800">
+            <div class="p-5 text-2xl font-bold border-b border-slate-800">
                 <i class="fa-solid fa-wallet text-blue-400 mr-2"></i>FinDash
             </div>
-            <nav class="flex-1 p-4 space-y-2">
+            <nav class="flex-1 p-3 space-y-1.5">
                 <a href="#" id="nav-overview" onclick="switchTab('overview')" class="block p-3 bg-blue-600 text-white rounded-lg transition"><i class="fa-solid fa-chart-pie mr-3"></i>Global Overview</a>
                 <a href="#" id="nav-cashflow" onclick="switchTab('cashflow')" class="block p-3 hover:bg-slate-800 text-gray-300 rounded-lg transition"><i class="fa-solid fa-money-bill-transfer mr-3"></i>Cash Flow</a>
             </nav>
         </aside>
 
-        <main class="flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-8">
+        <!-- PADDING DIKURANGI AGAR MUAT 1 LAYAR -->
+        <main class="flex-1 overflow-y-auto p-4 pb-24 md:p-6 md:pb-6">
             
             <div id="overview-section">
-                <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <h1 class="text-3xl font-bold text-gray-800">Global Overview</h1>
-                    <span id="net-worth-display" class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-semibold text-sm md:text-base">Net Worth: Menghitung...</span>
+                <!-- MARGIN BAWAH DIKURANGI -->
+                <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+                    <h1 class="text-2xl font-bold text-gray-800">Global Overview</h1>
+                    <span id="net-worth-display" class="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full font-semibold text-sm">Net Worth: Menghitung...</span>
                 </header>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium">Total Pemasukan</h3>
-                        <p id="income-display" class="text-2xl font-bold text-green-600 mt-2">Rp 0</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-xs font-medium">Total Pemasukan</h3>
+                        <p id="income-display" class="text-xl font-bold text-green-600 mt-1">Rp 0</p>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-500 text-sm font-medium">Total Pengeluaran</h3>
-                        <p id="expense-display" class="text-2xl font-bold text-red-500 mt-2">Rp 0</p>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-gray-500 text-xs font-medium">Total Pengeluaran</h3>
+                        <p id="expense-display" class="text-xl font-bold text-red-500 mt-1">Rp 0</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h2 class="text-xl font-bold mb-4">Catat Transaksi Baru</h2>
-                        <form id="transaction-form" class="space-y-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100">
+                        <h2 class="text-lg font-bold mb-3">Catat Transaksi Baru</h2>
+                        <!-- SPASI ANTAR INPUT DIKURANGI (space-y-3) -->
+                        <form id="transaction-form" class="space-y-3">
                             
-                            <!-- FITUR BARU: KOTAK SCAN BARCODE -->
-                            <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                                <label class="block text-sm font-bold text-gray-800"><i class="fa-solid fa-barcode mr-2"></i>Scan Barcode (Pengeluaran)</label>
-                                <div class="flex space-x-2 mt-2">
-                                    <input type="text" id="form-barcode" placeholder="Gunakan alat scanner/ketik lalu Enter..." class="flex-1 p-2 border border-yellow-400 rounded-md bg-white focus:ring-blue-500 focus:border-blue-500 font-mono">
-                                    <button type="button" id="camera-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition" title="Scan pakai Kamera HP">
+                            <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                <label class="block text-xs font-bold text-gray-800"><i class="fa-solid fa-barcode mr-1"></i>Scan Barcode (Pengeluaran)</label>
+                                <div class="flex space-x-2 mt-1.5">
+                                    <input type="text" id="form-barcode" placeholder="Gunakan alat scanner/ketik lalu Enter..." class="flex-1 p-1.5 text-sm border border-yellow-400 rounded-md bg-white focus:ring-blue-500 focus:border-blue-500 font-mono">
+                                    <button type="button" id="camera-btn" class="bg-blue-600 text-white font-bold py-1.5 px-3 rounded-md hover:bg-blue-700 transition" title="Scan pakai Kamera HP">
                                         <i class="fa-solid fa-camera"></i>
                                     </button>
                                 </div>
-                                <p id="barcode-msg" class="text-xs text-gray-500 mt-1">Sistem akan mencari harga & otomatis menyimpan.</p>
-                                <div id="reader" class="w-full mt-2 hidden rounded overflow-hidden"></div> <!-- Tempat kamera HP muncul -->
+                                <p id="barcode-msg" class="text-[10px] text-gray-500 mt-1">Sistem akan mencari harga & otomatis menyimpan.</p>
+                                <div id="reader" class="w-full mt-2 hidden rounded overflow-hidden"></div>
                             </div>
-                            <!-- ============================== -->
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Tipe</label>
-                                <select name="type" id="form-type" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                                <label class="block text-xs font-medium text-gray-700">Tipe</label>
+                                <select name="type" id="form-type" class="mt-1 w-full p-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required>
                                     <option value="Income">Pemasukan</option>
                                     <option value="Expense">Pengeluaran</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Deskripsi</label>
-                                <input type="text" name="category" id="form-desc" placeholder="Contoh: Gaji, Makanan..." class="mt-1 w-full p-2 border border-gray-300 rounded-md" required>
+                                <label class="block text-xs font-medium text-gray-700">Deskripsi</label>
+                                <input type="text" name="category" id="form-desc" placeholder="Contoh: Gaji, Makanan..." class="mt-1 w-full p-1.5 text-sm border border-gray-300 rounded-md" required>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Jumlah (Rp)</label>
-                                <input type="number" name="amount" id="form-amount" placeholder="50000" class="mt-1 w-full p-2 border border-gray-300 rounded-md" required>
+                                <label class="block text-xs font-medium text-gray-700">Jumlah (Rp)</label>
+                                <input type="number" name="amount" id="form-amount" placeholder="50000" class="mt-1 w-full p-1.5 text-sm border border-gray-300 rounded-md" required>
                             </div>
                             
-                            <div class="flex space-x-2 pt-2">
-                                <button type="submit" id="submit-btn" class="flex-1 bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition">
+                            <div class="flex space-x-2 pt-1">
+                                <button type="submit" id="submit-btn" class="flex-1 bg-blue-600 text-white font-bold py-1.5 px-4 rounded-md hover:bg-blue-700 transition">
                                     Simpan
                                 </button>
-                                <button type="button" id="voice-btn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-md hover:bg-gray-300 transition" title="Catat dengan Suara">
+                                <button type="button" id="voice-btn" class="bg-gray-200 text-gray-700 font-bold py-1.5 px-4 rounded-md hover:bg-gray-300 transition" title="Catat dengan Suara">
                                     <i class="fa-solid fa-microphone"></i>
                                 </button>
                             </div>
                         </form>
-                        <p id="success-msg" class="text-green-600 text-sm mt-3 hidden font-medium"><i class="fa-solid fa-check-circle mr-1"></i> Data berhasil disimpan!</p>
+                        <p id="success-msg" class="text-green-600 text-xs mt-2 hidden font-medium"><i class="fa-solid fa-check-circle mr-1"></i> Data berhasil disimpan!</p>
                     </div>
 
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h2 id="pie-title" class="text-xl font-bold mb-4">Rasio Pemasukan vs Pengeluaran</h2>
-                        <div class="relative h-64 w-full">
+                    <div class="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+                        <h2 id="pie-title" class="text-lg font-bold mb-3">Rasio Pemasukan vs Pengeluaran</h2>
+                        <!-- TINGGI GRAFIK DIKURANGI AGAR FIT 1 LAYAR (h-48) -->
+                        <div class="relative h-48 md:h-56 w-full flex-1">
                             <canvas id="pieChart"></canvas>
                         </div>
                     </div>
@@ -99,21 +100,21 @@
             </div>
 
             <div id="cashflow-section" class="hidden">
-                <header class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-800">Detail Cash Flow</h1>
-                    <p class="text-gray-500 mt-2 text-sm">Analisis bulanan dan riwayat transaksi</p>
+                <header class="mb-6">
+                    <h1 class="text-2xl font-bold text-gray-800">Detail Cash Flow</h1>
+                    <p class="text-gray-500 mt-1 text-sm">Analisis bulanan dan riwayat transaksi</p>
                 </header>
 
-                <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
-                    <h2 class="text-xl font-bold mb-4">Statistik Bulanan</h2>
-                    <div class="relative h-64 md:h-80 w-full">
+                <div class="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 mb-6">
+                    <h2 class="text-lg font-bold mb-3">Statistik Bulanan</h2>
+                    <div class="relative h-64 md:h-72 w-full">
                         <canvas id="barChart"></canvas>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-4 md:p-6 border-b border-gray-100">
-                        <h2 class="text-xl font-bold">Riwayat Transaksi</h2>
+                    <div class="p-4 border-b border-gray-100">
+                        <h2 class="text-lg font-bold">Riwayat Transaksi</h2>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
@@ -126,7 +127,7 @@
                                 </tr>
                             </thead>
                             <tbody id="table-body" class="bg-white divide-y divide-gray-200">
-                                </tbody>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -147,7 +148,7 @@
 
     <script>
         // PENTING: GANTI DENGAN URL APPS SCRIPT AGUS
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwFcxzpny_iomH84m--0v3r0bJzn8pwoe1oC9gB65SFhYp2Y4n6j3_IZoUODpCyWWZN/exec'; 
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxaDmtVWk-rdOMx1RxWdEGfUcaYg9FJ6L-jj1Rzgc5_H6-WxyVxe5yurOZ_HUcza0db/exec'; 
         
         const form = document.getElementById('transaction-form');
         const btn = document.getElementById('submit-btn');
@@ -159,7 +160,6 @@
         const voiceBtn = document.getElementById('voice-btn');
         const pieTitle = document.getElementById('pie-title');
 
-        // Elemen Barcode Baru
         const barcodeInput = document.getElementById('form-barcode');
         const barcodeMsg = document.getElementById('barcode-msg');
         const cameraBtn = document.getElementById('camera-btn');
@@ -167,14 +167,11 @@
         let pieChartInstance = null;
         let barChartInstance = null;
 
-
         // --- FITUR BARU: LOGIKA SCAN BARCODE (HANDHELD & KAMERA) ---
-        
-        // Fungsi utama untuk memproses angka barcode ke database
         async function processBarcode(barcodeVal) {
             if(!barcodeVal) return;
             barcodeMsg.innerText = "Mencari data barang...";
-            barcodeMsg.className = "text-xs text-blue-600 mt-1 font-bold";
+            barcodeMsg.className = "text-[10px] text-blue-600 mt-1 font-bold";
             barcodeInput.disabled = true;
 
             try {
@@ -183,31 +180,27 @@
 
                 if (result.found) {
                     barcodeMsg.innerText = "Barang ditemukan! Menyimpan...";
-                    barcodeMsg.className = "text-xs text-green-600 mt-1 font-bold";
+                    barcodeMsg.className = "text-[10px] text-green-600 mt-1 font-bold";
                     
-                    // Otomatis isi form
                     typeInput.value = 'Expense';
                     descInput.value = result.nama;
                     amountInput.value = result.harga;
 
-                    // Otomatis Simpan
                     btn.click(); 
                 } else {
                     barcodeMsg.innerText = "Barcode tidak ditemukan di Database.";
-                    barcodeMsg.className = "text-xs text-red-600 mt-1 font-bold";
+                    barcodeMsg.className = "text-[10px] text-red-600 mt-1 font-bold";
                 }
             } catch (error) {
                 barcodeMsg.innerText = "Gagal terhubung ke server.";
-                barcodeMsg.className = "text-xs text-red-600 mt-1 font-bold";
+                barcodeMsg.className = "text-[10px] text-red-600 mt-1 font-bold";
             }
             
-            // Bersihkan kotak input
             barcodeInput.value = '';
             barcodeInput.disabled = false;
             barcodeInput.focus();
         }
 
-        // Telinga 1: Deteksi alat Handheld (Tombol Enter)
         barcodeInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault(); 
@@ -215,30 +208,26 @@
             }
         });
 
-        // Telinga 2: Kamera HP Menggunakan html5-qrcode
         let html5QrCode;
         let isScanning = false;
 
         cameraBtn.addEventListener('click', () => {
             if (isScanning) {
-                // Matikan kamera
                 html5QrCode.stop().then(() => {
                     document.getElementById('reader').classList.add('hidden');
                     cameraBtn.innerHTML = '<i class="fa-solid fa-camera"></i>';
                     isScanning = false;
                 });
             } else {
-                // Nyalakan kamera
                 if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
                 document.getElementById('reader').classList.remove('hidden');
                 cameraBtn.innerHTML = '<i class="fa-solid fa-circle-stop"></i>';
                 isScanning = true;
                 
                 html5QrCode.start(
-                    { facingMode: "environment" }, // Pakai kamera belakang
+                    { facingMode: "environment" },
                     { fps: 10, qrbox: { width: 250, height: 150 } },
                     (decodedText, decodedResult) => {
-                        // Jika barcode berhasil terbaca
                         html5QrCode.stop();
                         document.getElementById('reader').classList.add('hidden');
                         cameraBtn.innerHTML = '<i class="fa-solid fa-camera"></i>';
@@ -247,9 +236,7 @@
                         barcodeInput.value = decodedText;
                         processBarcode(decodedText);
                     },
-                    (errorMessage) => {
-                        // Abaikan error saat kamera sedang mencari fokus
-                    }
+                    (errorMessage) => {}
                 ).catch((err) => {
                     alert("Akses kamera ditolak atau perangkat tidak mendukung.");
                     document.getElementById('reader').classList.add('hidden');
@@ -258,8 +245,6 @@
                 });
             }
         });
-        // -----------------------------------------------------------
-
 
         // --- 1. FITUR VOICE RECOGNITION (TETAP) ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -320,7 +305,6 @@
             voiceBtn.style.display = 'none'; 
         }
 
-
         // --- 2. FUNGSI NAVIGASI TAB (TETAP) ---
         function switchTab(tabId) {
             document.getElementById('overview-section').classList.add('hidden');
@@ -341,7 +325,6 @@
                 document.getElementById('nav-cashflow-mobile').className = "flex flex-col items-center text-blue-600 transition";
             }
         }
-
 
         // --- 3. FUNGSI MENGAMBIL & MERENDER DATA (TETAP) ---
         async function fetchAndUpdateData() {
@@ -377,10 +360,10 @@
                         
                         tableHTML += `
                             <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${formattedDate}</td>
-                                <td class="px-4 py-4 whitespace-nowrap">${typeBadge}</td>
-                                <td class="px-4 py-4 text-sm text-gray-900">${item.category}</td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm text-right font-medium ${item.type === 'Income' ? 'text-green-600' : 'text-red-500'}">
+                                <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-500">${formattedDate}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">${typeBadge}</td>
+                                <td class="px-4 py-3 text-xs text-gray-900">${item.category}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-xs text-right font-medium ${item.type === 'Income' ? 'text-green-600' : 'text-red-500'}">
                                     Rp ${amount.toLocaleString('id-ID')}
                                 </td>
                             </tr>
@@ -414,7 +397,6 @@
                 document.getElementById('net-worth-display').innerText = 'Gagal memuat data';
             }
         }
-
 
         // --- 4. FUNGSI RENDER GRAFIK (TETAP) ---
         function renderPieChart(income, expense) {
