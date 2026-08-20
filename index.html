@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Library tambahan untuk membaca Barcode dari Kamera HP -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
 
@@ -44,6 +46,21 @@
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                         <h2 class="text-xl font-bold mb-4">Catat Transaksi Baru</h2>
                         <form id="transaction-form" class="space-y-4">
+                            
+                            <!-- FITUR BARU: KOTAK SCAN BARCODE -->
+                            <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                                <label class="block text-sm font-bold text-gray-800"><i class="fa-solid fa-barcode mr-2"></i>Scan Barcode (Pengeluaran)</label>
+                                <div class="flex space-x-2 mt-2">
+                                    <input type="text" id="form-barcode" placeholder="Gunakan alat scanner/ketik lalu Enter..." class="flex-1 p-2 border border-yellow-400 rounded-md bg-white focus:ring-blue-500 focus:border-blue-500 font-mono">
+                                    <button type="button" id="camera-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition" title="Scan pakai Kamera HP">
+                                        <i class="fa-solid fa-camera"></i>
+                                    </button>
+                                </div>
+                                <p id="barcode-msg" class="text-xs text-gray-500 mt-1">Sistem akan mencari harga & otomatis menyimpan.</p>
+                                <div id="reader" class="w-full mt-2 hidden rounded overflow-hidden"></div> <!-- Tempat kamera HP muncul -->
+                            </div>
+                            <!-- ============================== -->
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Tipe</label>
                                 <select name="type" id="form-type" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required>
@@ -129,46 +146,142 @@
     </nav>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwQlfvX_oa6N1f1GPTNIv8xx-NnixtISpzQ6GSIVrZrb1nDtSvTGw-asXKHvxliUxRv/exec'; 
+        // PENTING: GANTI DENGAN URL APPS SCRIPT AGUS
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwIfViv9ShOXCDupMD-Dt2Nglmlasu94_uTuLd2Iw1zL7UQ5QwzW8OB9c5Je56c7000/exec'; 
         
         const form = document.getElementById('transaction-form');
         const btn = document.getElementById('submit-btn');
         const msg = document.getElementById('success-msg');
         
-        // Elemen Input untuk Voice Control
         const typeInput = document.getElementById('form-type');
         const descInput = document.getElementById('form-desc');
         const amountInput = document.getElementById('form-amount');
         const voiceBtn = document.getElementById('voice-btn');
         const pieTitle = document.getElementById('pie-title');
 
+        // Elemen Barcode Baru
+        const barcodeInput = document.getElementById('form-barcode');
+        const barcodeMsg = document.getElementById('barcode-msg');
+        const cameraBtn = document.getElementById('camera-btn');
+
         let pieChartInstance = null;
         let barChartInstance = null;
 
-        // --- 1. FITUR VOICE RECOGNITION ---
+
+        // --- FITUR BARU: LOGIKA SCAN BARCODE (HANDHELD & KAMERA) ---
+        
+        // Fungsi utama untuk memproses angka barcode ke database
+        async function processBarcode(barcodeVal) {
+            if(!barcodeVal) return;
+            barcodeMsg.innerText = "Mencari data barang...";
+            barcodeMsg.className = "text-xs text-blue-600 mt-1 font-bold";
+            barcodeInput.disabled = true;
+
+            try {
+                const res = await fetch(`${scriptURL}?action=getBarcode&barcode=${barcodeVal}`);
+                const result = await res.json();
+
+                if (result.found) {
+                    barcodeMsg.innerText = "Barang ditemukan! Menyimpan...";
+                    barcodeMsg.className = "text-xs text-green-600 mt-1 font-bold";
+                    
+                    // Otomatis isi form
+                    typeInput.value = 'Expense';
+                    descInput.value = result.nama;
+                    amountInput.value = result.harga;
+
+                    // Otomatis Simpan
+                    btn.click(); 
+                } else {
+                    barcodeMsg.innerText = "Barcode tidak ditemukan di Database.";
+                    barcodeMsg.className = "text-xs text-red-600 mt-1 font-bold";
+                }
+            } catch (error) {
+                barcodeMsg.innerText = "Gagal terhubung ke server.";
+                barcodeMsg.className = "text-xs text-red-600 mt-1 font-bold";
+            }
+            
+            // Bersihkan kotak input
+            barcodeInput.value = '';
+            barcodeInput.disabled = false;
+            barcodeInput.focus();
+        }
+
+        // Telinga 1: Deteksi alat Handheld (Tombol Enter)
+        barcodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                processBarcode(barcodeInput.value.trim());
+            }
+        });
+
+        // Telinga 2: Kamera HP Menggunakan html5-qrcode
+        let html5QrCode;
+        let isScanning = false;
+
+        cameraBtn.addEventListener('click', () => {
+            if (isScanning) {
+                // Matikan kamera
+                html5QrCode.stop().then(() => {
+                    document.getElementById('reader').classList.add('hidden');
+                    cameraBtn.innerHTML = '<i class="fa-solid fa-camera"></i>';
+                    isScanning = false;
+                });
+            } else {
+                // Nyalakan kamera
+                if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+                document.getElementById('reader').classList.remove('hidden');
+                cameraBtn.innerHTML = '<i class="fa-solid fa-circle-stop"></i>';
+                isScanning = true;
+                
+                html5QrCode.start(
+                    { facingMode: "environment" }, // Pakai kamera belakang
+                    { fps: 10, qrbox: { width: 250, height: 150 } },
+                    (decodedText, decodedResult) => {
+                        // Jika barcode berhasil terbaca
+                        html5QrCode.stop();
+                        document.getElementById('reader').classList.add('hidden');
+                        cameraBtn.innerHTML = '<i class="fa-solid fa-camera"></i>';
+                        isScanning = false;
+                        
+                        barcodeInput.value = decodedText;
+                        processBarcode(decodedText);
+                    },
+                    (errorMessage) => {
+                        // Abaikan error saat kamera sedang mencari fokus
+                    }
+                ).catch((err) => {
+                    alert("Akses kamera ditolak atau perangkat tidak mendukung.");
+                    document.getElementById('reader').classList.add('hidden');
+                    cameraBtn.innerHTML = '<i class="fa-solid fa-camera"></i>';
+                    isScanning = false;
+                });
+            }
+        });
+        // -----------------------------------------------------------
+
+
+        // --- 1. FITUR VOICE RECOGNITION (TETAP) ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
             const recognition = new SpeechRecognition();
-            recognition.lang = 'id-ID'; // Menggunakan bahasa Indonesia
+            recognition.lang = 'id-ID'; 
             recognition.interimResults = false;
 
             voiceBtn.addEventListener('click', () => {
                 recognition.start();
-                // Ubah icon jadi animasi berkedip merah tanda sedang merekam
                 voiceBtn.innerHTML = '<i class="fa-solid fa-microphone fa-fade text-red-500"></i>'; 
             });
 
             recognition.addEventListener('result', (e) => {
                 const transcript = e.results[0][0].transcript.toLowerCase();
                 
-                // Menentukan Tipe
                 if (transcript.includes('pemasukan')) {
                     typeInput.value = 'Income';
                 } else {
-                    typeInput.value = 'Expense'; // Default jika tidak sebut pemasukan
+                    typeInput.value = 'Expense'; 
                 }
 
-                // Menentukan Angka (Google Web Speech biasanya sudah mengubah kata "sepuluh ribu" jadi "10000" atau "10 ribu")
                 let amount = 0;
                 const numberMatch = transcript.match(/\d+/g); 
                 if (numberMatch) {
@@ -178,21 +291,17 @@
                 }
                 amountInput.value = amount > 0 ? amount : '';
 
-                // REVISI: Menentukan Deskripsi (Menghapus kata kunci tipe, angka, titik, dan "rp" dari kalimat)
                 let desc = transcript
-                    .replace(/pemasukan|pengeluaran/gi, '') // Hapus kata tipe
-                    .replace(/[0-9]/g, '') // Hapus angka
-                    .replace(/ribu|juta|rupiah|rp/gi, '') // Hapus satuan uang dan singkatan "rp"
-                    .replace(/\./g, '') // Hapus tanda titik (.) yang terbawa dari format angka browser
-                    .replace(/\s+/g, ' ') // Merapikan spasi yang ganda akibat kata yang dihapus
+                    .replace(/pemasukan|pengeluaran/gi, '') 
+                    .replace(/[0-9]/g, '') 
+                    .replace(/ribu|juta|rupiah|rp/gi, '') 
+                    .replace(/\./g, '') 
+                    .replace(/\s+/g, ' ') 
                     .trim();
                 
                 descInput.value = desc || 'Transaksi Suara';
-
-                // Kembalikan tombol normal
                 voiceBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
 
-                // Otomatis klik tombol "Simpan" jika angka valid terdeteksi
                 if(amount > 0) {
                     btn.click();
                 } else {
@@ -208,12 +317,11 @@
                 alert("Gagal mendeteksi suara. Pastikan Anda mengizinkan akses mikrofon di browser.");
             });
         } else {
-            // Sembunyikan tombol jika browser (seperti Firefox lama) tidak mendukung fitur suara
             voiceBtn.style.display = 'none'; 
         }
 
 
-        // --- 2. FUNGSI NAVIGASI TAB ---
+        // --- 2. FUNGSI NAVIGASI TAB (TETAP) ---
         function switchTab(tabId) {
             document.getElementById('overview-section').classList.add('hidden');
             document.getElementById('cashflow-section').classList.add('hidden');
@@ -235,7 +343,7 @@
         }
 
 
-        // --- 3. FUNGSI MENGAMBIL & MERENDER DATA ---
+        // --- 3. FUNGSI MENGAMBIL & MERENDER DATA (TETAP) ---
         async function fetchAndUpdateData() {
             try {
                 const response = await fetch(scriptURL);
@@ -282,7 +390,6 @@
 
                 const netWorth = totalIncome - totalExpense;
 
-                // --- REVISI: UPDATE PERSENTASE JUDUL PIE CHART ---
                 const totalKeseluruhan = totalIncome + totalExpense;
                 let pctIncome = "0";
                 let pctExpense = "0";
@@ -309,7 +416,7 @@
         }
 
 
-        // --- 4. FUNGSI RENDER GRAFIK ---
+        // --- 4. FUNGSI RENDER GRAFIK (TETAP) ---
         function renderPieChart(income, expense) {
             const ctx = document.getElementById('pieChart').getContext('2d');
             if (pieChartInstance) pieChartInstance.destroy(); 
@@ -353,7 +460,7 @@
             });
         }
 
-        // --- 5. FUNGSI MENGIRIM DATA ---
+        // --- 5. FUNGSI MENGIRIM DATA (TETAP) ---
         form.addEventListener('submit', e => {
             e.preventDefault();
             btn.innerHTML = 'Menyimpan... <i class="fa-solid fa-spinner fa-spin"></i>';
